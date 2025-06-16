@@ -1,0 +1,14 @@
+pycache/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
+*.egg-info/
+dist/
+build/
+.git
+.idea
+.vscode
+jobs/ # externalised as volume
+logs/ # externalised as volume
