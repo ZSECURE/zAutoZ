@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Recon Toolkit</title>
+<style>
+body{font-family:Arial;margin:0;background:#f4f4f4}
+header{background:#222;color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center}
+#logBtn{color:#fff;background:#444;border:none;padding:6px 14px;cursor:pointer}
+main{padding:20px}
+fieldset{border:1px solid #ccc;margin-bottom:20px;padding:10px}
+label{display:block;margin-top:8px}
+button.run{margin-top:12px;padding:8px 16px;background:#2196f3;color:#fff;border:none;cursor:pointer}
+#out{white-space:pre-wrap;background:#000;color:#0f0;padding:10px;min-height:200px;overflow:auto}
+</style>
+</head>
+<body>
+<header>
+  <h2>Recon Toolkit</h2>
+  <button id="logBtn">View Logs</button>
+</header>
+
+<main>
+  <fieldset>
+    <legend>Job Parameters</legend>
+      <label>Job name
+        <input id="job" placeholder="Client-Name/June-2025">
+      </label>
+      <label>Target(s) (one or many, space/comma separated)
+        <textarea id="targets" rows="3"></textarea>
+      </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Modules</legend>
+    <!-- buttons auto-populated by JS -->
+    <div id="modules"></div>
+  </fieldset>
+
+  <h3>Output</h3>
+  <div id="out">…waiting…</div>
+</main>
+
+<script>
+const MODS = {{ modules|tojson }};   // provided by flask
+
+function makeButtons(){
+  const box=document.getElementById('modules');
+  MODS.forEach(m=>{
+      const btn=document.createElement('button');
+      btn.className='run';
+      btn.textContent=m;
+      btn.onclick=()=>runModule(m);
+      box.appendChild(btn);
+  });
+}
+
+async function runModule(cmd){
+   const job = document.getElementById('job').value.trim();
+   const tgt = document.getElementById('targets').value.trim();
+   if(!job||!tgt){alert("Job & Target required");return;}
+   document.getElementById('out').textContent="Running "+cmd+" …";
+   const res = await fetch('/api/run',{method:'POST',
+       headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({command:cmd,targets:tgt,job:job})
+   });
+   const dat = await res.json();
+   document.getElementById('out').textContent=dat.out||dat.error||'error';
+}
+
+document.getElementById('logBtn').onclick = ()=>window.open('/api/log','_blank');
+makeButtons();
+</script>
+</body>
+</html>
